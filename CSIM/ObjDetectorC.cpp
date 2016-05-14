@@ -33,20 +33,14 @@ bool init_face_detection(uint32_t Height,uint32_t Width,cvFacedetectParameters *
     param->stepSize = 2;	
 
     buffer = NULL;
-
     int maxDetectedFaceNum = 50;
     int memSize = (4 * Width * Height) + ((Width+9) * (Height+1)* 2) + (4788*2*4+200) + maxDetectedFaceNum * 100 * 16;
 
-
 	buffer = malloc( (memSize * sizeof(uint8_t)));
-    if(buffer!=NULL)
-    {
-    	
+    if(buffer!=NULL)        	
         memset(buffer,0,(memSize * sizeof(uint8_t)));
-    } else{
-    
-        return false;
-	}
+     else    
+        return false;	
 
    pthread_mutex_init(&mutex, NULL);
    nCandidate =0;
@@ -595,6 +589,7 @@ uint32_t icvFaceDetection(  uint8_t * __restrict src,
             feature[fi].p[1] = feature[fi].p[0]+ sumStride*fH;
         }
         stepSize = sFactor > 2. ? 1 : stepSize;
+ #ifdef MULTITHREAD
 		int stripCount, stripSize;
 
         const int PTS_PER_THREAD = 3500;
@@ -649,9 +644,8 @@ uint32_t icvFaceDetection(  uint8_t * __restrict src,
                     exit(-1);
                 }
           }
-
-        /*
-        foundCandidate = 0;
+ #else
+        //foundCandidate = 0;
         for(y = 0; y < (uint32_t)processingRectSizeHeight; y += stepSize)
         {
             for(x = 0; x < (uint32_t)processingRectSizeWidth; x += stepSize )
@@ -665,10 +659,12 @@ uint32_t icvFaceDetection(  uint8_t * __restrict src,
                     cf.width = windowSizeWidth;
                     cf.height = windowSizeHeight;
                     candidateResult[nCandidate++] = cf;
-                    foundCandidate = 1;
-                } else if(resultRunFearure==0) x += stepSize;
-      }
-        }*/	
+                    //foundCandidate = 1;
+                } else if(resultRunFearure==0) 
+                	x += stepSize;
+      		}
+        }
+#endif
         buf = (uint8_t*)buf - sumStride * (scaleImgHeight+1) * sizeof(uint16_t)  - 16;
         buf = (uint8_t*)buf - scaleImgWidth * scaleImgHeight * sizeof(uint8_t) - 16;
     }

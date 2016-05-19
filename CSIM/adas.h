@@ -26,7 +26,6 @@ typedef struct _tagCarDistance {
 
 int adas_car_detect(uint8_t *frame, CarDistance *distance, unsigned int *count);
 
-
 //  释放资源
 void adas_free();
 

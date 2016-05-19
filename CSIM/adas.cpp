@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ObjDetectorAPI.h"
-
 #include <iostream>
 #include <fstream>
 

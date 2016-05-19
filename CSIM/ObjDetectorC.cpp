@@ -9,6 +9,15 @@
 #include <time.h>
 #include <pthread.h>
 using namespace std;
+
+#include <android/log.h>
+#define LOG_TAG       "kneron_adas_car"
+#define DPRINTF(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#define IPRINTF(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define EPRINTF(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+
+#define MULTITHREAD
+
 void *buffer;
 typedef struct _stripRange {
 	ifcvFeature *feature;
@@ -379,13 +388,11 @@ int32_t icvRunFeature( const ifcvFeature *feature, uint32_t offset, int32_t * co
 
 	
     for(stage = 0; stage < nstages; stage++ )
-    {
-    
+    {    
         ntrees = nStageWeekClassifierCount_[stage];
         *confidance = 0;   
         for( week = 0; week < ntrees; week++ )
-        {    
-   
+        {   
             ff = feature[nodeOffset];
             w  = featureRectW[nodeOffset];   	
             p[0] = ff.p[0];
@@ -473,12 +480,11 @@ void *processStrip(void *_range)
 		}
 	}
     cout << "exit the thread for range " << myRange->start << " and " << myRange->end << endl;
-   //pthread_exit(NULL);
    return myRange;
 }
 
 
-uint32_t icvFaceDetection(  uint8_t * __restrict src,                          
+uint32_t icvFaceDetection(uint8_t * __restrict src,                          
                           uint32_t srcWidth, 
                           uint32_t srcHeight, 
                           uint32_t srcStride,
@@ -601,6 +607,7 @@ uint32_t icvFaceDetection(  uint8_t * __restrict src,
 		vector<Range> r(stripCount);
 
         cout << "number of strip count =" << stripCount << endl;
+        DPRINTF("the number of strip count is = %d/n",stripCount);
 		for(int t=0; t<stripCount; t++)
 		{
 		
@@ -731,31 +738,24 @@ void cvIntegrateImageu8_v2C_16Bit( const uint8_t* __restrict src,
     uint16_t* iimg;
     uint16_t* iimgPrev;
     const uint8_t* img;
-
-    dstStride = (dstStride / sizeof(uint16_t));     //Convert from #bytes to #values
-
-   
+    dstStride = (dstStride / sizeof(uint16_t));    
     img      = src;
     iimgPrev = dst;
     iimg     = dst + dstStride;
-    *iimg++ = *iimgPrev++ = sum = 0;  // zero first column
-
+    *iimg++ = *iimgPrev++ = sum = 0;
     for ( j=0; j<srcWidth; ++j )
     {
         iimgPrev[j] = 0;
         sum    += img[j];
         iimg[j] = (uint16_t)sum;
     }
-
-    // remaining rows
     iimgPrev = iimg;
     img  += srcStride;
     iimg += dstStride;
 
     for ( i=1; i<srcHeight; ++i )
     {
-        iimg[-1] = sum = 0;  // zero first column
-
+        iimg[-1] = sum = 0;  
         for ( j=0; j<srcWidth; ++j )
         {
             sum    += img[j];
@@ -839,13 +839,13 @@ void cvScaleDownMNu8Q(const uint8_t* __restrict src,
     uint8_t step  = 0;
     uint8_t* p_step = horiz_input_pixels;
 
-    // pre-compute how many src columns are averaged for each dst column.
+   
     for (uint32_t i = 0; i < srcWidth; i++)
     {
-        count += dstWidth;        // M
+        count += dstWidth;        
         step++;
 
-        if (count >= srcWidth)     // N
+        if (count >= srcWidth)     
         {
             *p_step++ = step;
             count -= srcWidth;
@@ -856,11 +856,10 @@ void cvScaleDownMNu8Q(const uint8_t* __restrict src,
     count = 0;
     step  = 0;
     uint32_t accum = 0;
-
-    // compute how many src rows are averaged for each dst row. During loop, perform averaging and write output pixels.
+ 
     for (uint32_t i = 0; i < dstHeight; i++)
     {
-        // for new dst rows, reset raster values to next src row.
+       
         for (uint32_t j = 0; j < srcWidth; j++)
         {
             raster[j] = src[j];
@@ -870,17 +869,17 @@ void cvScaleDownMNu8Q(const uint8_t* __restrict src,
         src += srcStride;
         while (count < srcHeight)
         {
-            // add next src row to raster values.
+          
             for (uint32_t j = 0; j < srcWidth; j++)
             {
                 raster[j] += src[j];
             }
-            count += dstHeight;        // M
+            count += dstHeight;       
             step++;
             src += srcStride;
         }
 
-        // accumulate columns out output a row of pixels.
+       
         uint16_t *p_raster = raster;
         for (uint32_t j = 0; j < dstWidth; j++)
         {
@@ -899,10 +898,3 @@ void cvScaleDownMNu8Q(const uint8_t* __restrict src,
     }
     free(raw_buf);
 }
-
-
-
-
-
-
-
